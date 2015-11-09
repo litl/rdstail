@@ -11,6 +11,13 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
+	"github.com/chrismrivera/backoff"
+)
+
+const (
+	papertrailBackoffMaxWait  = time.Minute
+	papertrailBackoffDeadline = time.Minute * 5
+	// aws-sdk-go already offers retry functionality
 )
 
 func getMostRecentLogFile(r *rds.RDS, db string) (file *rds.DescribeDBLogFilesDetails, err error) {
@@ -152,6 +159,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 				}
 				if newLogFile != nil {
 					logFile = newLogFile
+					marker = ""
 				}
 			}
 
@@ -199,19 +207,16 @@ func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, a
 	defer conn.Close()
 
 	// watch with callback writing to the connection
+	buf := bytes.Buffer{}
 	return Watch(r, db, rate, func(lines string) error {
 		timestamp := time.Now().UTC().Format("2006-01-02T15:04:05")
-		_, err := conn.Write([]byte(timestamp))
-		if err != nil {
+		buf.Reset()
+		buf.WriteString(timestamp)
+		buf.WriteString(nameSegment)
+		buf.WriteString(lines)
+		return backoff.Try(papertrailBackoffMaxWait, papertrailBackoffDeadline, func() error {
+			_, err := conn.Write(buf.Bytes())
 			return err
-		}
-
-		_, err = conn.Write([]byte(nameSegment))
-		if err != nil {
-			return err
-		}
-
-		_, err = conn.Write([]byte(lines))
-		return err
+		})
 	}, stop)
 }

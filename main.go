@@ -26,7 +26,8 @@ func signalListen(stop chan<- struct{}) {
 }
 
 func run(c *cli.Context) {
-	r := rds.New(session.New(), aws.NewConfig().WithRegion(c.String("region")))
+	region := c.String("region")
+	maxRetries := c.Int("max-retries")
 	db := c.String("instance")
 	numLines := int64(c.Int("lines"))
 	papertrailHost := c.String("papertrail")
@@ -35,6 +36,9 @@ func run(c *cli.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	cfg := aws.NewConfig().WithRegion(region).WithMaxRetries(maxRetries)
+	r := rds.New(session.New(), cfg)
 
 	stop := make(chan struct{})
 	go signalListen(stop)
@@ -96,6 +100,11 @@ func main() {
 			Name:  "app, a",
 			Value: "rdstail",
 			Usage: "app name to send to papertrail",
+		},
+		cli.IntFlag{
+			Name:  "max-retries",
+			Value: 10,
+			Usage: "maximium number of retries for rds requests",
 		},
 	}
 
