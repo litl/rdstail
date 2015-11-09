@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"errors"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -184,11 +183,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 	return nil
 }
 
-func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, app string, stop <-chan struct{}) error {
-	hostname, err := os.Hostname()
-	if err != nil {
-		return err
-	}
+func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, app, hostname string, stop <-chan struct{}) error {
 	nameSegment := fmt.Sprintf(" %s %s: ", hostname, app)
 
 	// Establish TLS connection with papertrail
