@@ -6,7 +6,7 @@ RDSTail is a tool for tailing or streaming RDS log files.  Supports piping to pa
 Installation
 ============
 
-For now, you must compile from source.  Install [https://golang.org](Go).
+For now, you must compile from source.  Install [Go](https://golang.org).
 
     » go get github.com/litl/rdstail
 
