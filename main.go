@@ -12,8 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/codegangsta/cli"
 	"github.com/litl/rdstail/src"
+	"github.com/urfave/cli"
 )
 
 func fie(e error) {
@@ -54,7 +54,12 @@ func parseDB(c *cli.Context) string {
 	return db
 }
 
-func watch(c *cli.Context) {
+func watchOutput(lines string) error {
+	fmt.Print(lines)
+	return nil
+}
+
+func watch(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
@@ -62,15 +67,16 @@ func watch(c *cli.Context) {
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.Watch(r, db, rate, func(lines string) error {
-		fmt.Print(lines)
-		return nil
-	}, stop)
+	err := rdstail.Watch(r, db, rate, watchOutput, stop)
 
-	fie(err)
+	//fie(err)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 1)
+	}
+	return nil
 }
 
-func papertrail(c *cli.Context) {
+func papertrail(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
@@ -91,15 +97,23 @@ func papertrail(c *cli.Context) {
 
 	err := rdstail.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
 
-	fie(err)
+	//fie(err)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 1)
+	}
+	return nil
 }
 
-func tail(c *cli.Context) {
+func tail(c *cli.Context) error {
 	r := setupRDS(c)
 	db := parseDB(c)
 	numLines := int64(c.Int("lines"))
 	err := rdstail.Tail(r, db, numLines)
-	fie(err)
+	//fie(err)
+	if err != nil {
+		return cli.NewExitError(err.Error(), 1)
+	}
+	return nil
 }
 
 func main() {
