@@ -1,8 +1,7 @@
 FROM golang:1.7
 
-RUN mkdir -p /go/src/rdstail
-WORKDIR /go/src/rdstail
+WORKDIR /go/src/github.com/Instamojo/rdstail
 
-COPY . /go/src/rdstail
+COPY . /go/src/github.com/Instamojo/rdstail
 RUN go-wrapper download
 RUN go-wrapper install
