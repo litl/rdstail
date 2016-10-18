@@ -1,4 +1,4 @@
-package rdstail
+package lib
 
 import (
 	"bytes"

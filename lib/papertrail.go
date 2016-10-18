@@ -1,4 +1,4 @@
-package rdstail
+package lib
 
 const papertrailPEM = `##
 ## ca-bundle.crt -- Bundle of CA Root Certificates

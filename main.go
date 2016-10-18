@@ -13,7 +13,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/urfave/cli"
-	"github.com/Instamojo/rdstail/src"
+
+	"github.com/Instamojo/rdstail/lib"
 )
 
 func fie(e error) {
@@ -23,7 +24,7 @@ func fie(e error) {
 	}
 }
 
-func signalListen(stop chan<- struct{}) {
+func signalListen(stop chan <- struct{}) {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
 
@@ -62,7 +63,7 @@ func watch(c *cli.Context) {
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.Watch(r, db, rate, func(lines string) error {
+	err := lib.Watch(r, db, rate, func(lines string) error {
 		fmt.Print(lines)
 		return nil
 	}, stop)
@@ -89,7 +90,7 @@ func papertrail(c *cli.Context) {
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
+	err := lib.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
 
 	fie(err)
 }
@@ -98,7 +99,7 @@ func tail(c *cli.Context) {
 	r := setupRDS(c)
 	db := parseDB(c)
 	numLines := int64(c.Int("lines"))
-	err := rdstail.Tail(r, db, numLines)
+	err := lib.Tail(r, db, numLines)
 	fie(err)
 }
 
