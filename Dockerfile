@@ -1,4 +1,4 @@
-FROM golang:1.7
+FROM golang:latest
 
 WORKDIR /go/src/github.com/Instamojo/rdstail
 
