@@ -3,12 +3,12 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
@@ -19,12 +19,11 @@ import (
 
 func fie(e error) {
 	if e != nil {
-		fmt.Println(e)
-		os.Exit(1)
+		log.Fatal(e)
 	}
 }
 
-func signalListen(stop chan <- struct{}) {
+func signalListen(stop chan<- struct{}) {
 	c := make(chan os.Signal)
 	signal.Notify(c, syscall.SIGTERM, syscall.SIGINT)
 
