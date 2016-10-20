@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/chrismrivera/backoff"
@@ -135,7 +136,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 		return err
 	}
 	if logFile == nil {
-		return errors.New("no log files")
+		return errors.New("No log files found for this RDS instance.")
 	}
 
 	// Get a marker for the end of the log file by requesting the most recent line
@@ -143,6 +144,8 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 	if err != nil {
 		return err
 	}
+
+	log.Infof("Starting with most recent log file: %s", *logFile.LogFileName)
 
 	t := time.NewTicker(rate)
 	empty := 0
@@ -152,6 +155,8 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 		case <-t.C:
 			// If the logfile tail was empty n times, check for a newer log file
 			if empty >= checkLogfileRate {
+				log.Debugf("Checking for a new log file since no new logs are found in last %v",
+					checkLogfileRate*rate)
 				empty = 0
 				newLogFile, err := getMostRecentLogFileSince(r, db, *logFile.LastWritten)
 				if err != nil {
@@ -161,6 +166,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 				// Ensure if we got a real new log file, and not the same file we are
 				// already tailing. Reset the marker if its a real new log file only.
 				if newLogFile != nil && *newLogFile.LogFileName != *logFile.LogFileName {
+					log.Infof("Found a new log file: %s", *newLogFile.LogFileName)
 					logFile = newLogFile
 					marker = ""
 				}
@@ -208,12 +214,16 @@ func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, a
 	// watch with callback writing to the connection
 	return Watch(r, db, rate, func(lines string) error {
 		timestamp := time.Now().UTC().Format("2006-01-02T15:04:05")
-    	        buf := bytes.Buffer{}
+		buf := bytes.Buffer{}
 		buf.WriteString(timestamp)
 		buf.WriteString(nameSegment)
 		buf.WriteString(lines)
 		return backoff.Try(papertrailBackoffMaxWait, papertrailBackoffDeadline, func() error {
 			_, err := conn.Write(buf.Bytes())
+			if err != nil {
+				log.Warnf("Writing to Papertrail failed. Error: %v. This will be retried.",
+					err, papertrailBackoffMaxWait)
+			}
 			return err
 		})
 	}, stop)
