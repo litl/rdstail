@@ -1,7 +1,11 @@
-FROM golang:latest
+FROM alpine:latest
 
-WORKDIR /go/src/github.com/Instamojo/rdstail
+# Get certificates since we need to talk to AWS on HTTPS.
+RUN apk add --update ca-certificates
+RUN update-ca-certificates
 
-COPY . /go/src/github.com/Instamojo/rdstail
-RUN go-wrapper download
-RUN go-wrapper install
+# Do not run as root.
+USER nobody
+
+ADD rdstail .
+ENTRYPOINT ["/rdstail"]
