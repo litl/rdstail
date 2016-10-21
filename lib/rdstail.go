@@ -3,7 +3,6 @@ package lib
 import (
 	"bytes"
 	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"time"
@@ -197,15 +196,7 @@ func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, a
 	nameSegment := fmt.Sprintf(" %s %s: ", hostname, app)
 
 	// Establish TLS connection with papertrail
-	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM([]byte(papertrailPEM))
-	if !ok {
-		return errors.New("failed to parse papertrail root certificate")
-	}
-
-	conn, err := tls.Dial("tcp", papertrailHost, &tls.Config{
-		RootCAs: roots,
-	})
+	conn, err := tls.Dial("tcp", papertrailHost, &tls.Config{})
 	if err != nil {
 		return err
 	}
