@@ -8,7 +8,7 @@ Installation
 
 For now, you must compile from source.  Install [Go](https://golang.org).
 
-    » go get github.com/litl/rdstail
+    » go get github.com/Instamojo/rdstail
 
 
 Usage
