@@ -44,6 +44,7 @@ func getMostRecentLogFile(r *rds.RDS, db string) (file *rds.DescribeDBLogFilesDe
 	return
 }
 
+// getMostRecentLogFileSince returns the most recent log file whose lastWritten >= since.
 func getMostRecentLogFileSince(r *rds.RDS, db string, since int64) (file *rds.DescribeDBLogFilesDetails, err error) {
 	resp, err := describeLogFiles(r, db, since)
 	if err != nil {
@@ -156,7 +157,9 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 				if err != nil {
 					return err
 				}
-				if newLogFile != nil {
+				// Ensure if we got a real new log file, and not the same file we are
+				// already tailing. Reset the marker if its a real new log file only.
+				if newLogFile != nil && *newLogFile.LogFileName != *logFile.LogFileName {
 					logFile = newLogFile
 					marker = ""
 				}
