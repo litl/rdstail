@@ -188,8 +188,6 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, app, hostname string, stop <-chan struct{}) error {
