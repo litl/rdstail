@@ -109,7 +109,7 @@ func main() {
 	app.Usage = `Reads AWS RDS logs
 
     AWS credentials are taken from an ~/.aws/credentials file or the env vars AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.`
-	app.Version = "0.1.0"
+	app.Version = "2017.04"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "instance, i",
