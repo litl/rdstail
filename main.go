@@ -12,7 +12,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/mgar/rdstail/src"
+	"github.com/litl/rdstail/src"
 	"github.com/urfave/cli"
 )
 
@@ -205,7 +205,7 @@ func main() {
 				},
 				cli.StringFlag{
 					Name:  "file, f",
-					Usage: "name of the logfile to watch",
+					Usage: "name of the logfile to tail",
 				},
 			},
 		},
