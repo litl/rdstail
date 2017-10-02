@@ -13,7 +13,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/urfave/cli"
-	"github.com/litl/rdstail/src"
+	"github.com/mgar/rdstail/src"
 )
 
 func fie(e error) {
@@ -58,9 +58,18 @@ func watch(c *cli.Context) {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
-
+	file := string(c.String("file"))
 	stop := make(chan struct{})
 	go signalListen(stop)
+
+	if file != "" {
+		err := rdstail.WatchFile(r, db, rate, file, func(lines string) error {
+			fmt.Print(lines)
+			return nil
+		}, stop)
+
+		fie(err)
+	}
 
 	err := rdstail.Watch(r, db, rate, func(lines string) error {
 		fmt.Print(lines)
@@ -97,7 +106,12 @@ func papertrail(c *cli.Context) {
 func tail(c *cli.Context) {
 	r := setupRDS(c)
 	db := parseDB(c)
+	file := string(c.String("file"))
 	numLines := int64(c.Int("lines"))
+	if file != "" {
+		err := rdstail.TailFile(r, db, file, numLines)
+		fie(err)
+	}
 	err := rdstail.Tail(r, db, numLines)
 	fie(err)
 }
@@ -167,6 +181,10 @@ func main() {
 					Value: "3s",
 					Usage: "rds log polling rate",
 				},
+				cli.StringFlag{
+					Name: "file, f",
+					Usage: "name of the logfile to watch",
+				},
 			},
 		},
 
@@ -179,6 +197,10 @@ func main() {
 					Name:  "lines, n",
 					Value: 20,
 					Usage: "output the last n lines. use 0 for a full dump of the most recent file",
+				},
+				cli.StringFlag{
+					Name: "file, f",
+					Usage: "name of the logfile to watch",
 				},
 			},
 		},

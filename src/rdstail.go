@@ -126,6 +126,17 @@ func Tail(r *rds.RDS, db string, numLines int64) error {
 	return nil
 }
 
+func TailFile(r *rds.RDS, db string, file string, numLines int64) error {
+	logFile := &rds.DescribeDBLogFilesDetails{LogFileName: aws.String(file)}
+
+	tail, _, err := tailLogFile(r, db, *logFile.LogFileName, numLines, "")
+	if err != nil {
+		return err
+	}
+	fmt.Println(tail)
+	return nil
+}
+
 func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) error, stop <-chan struct{}) error {
 	// Periodically check for new log files (unless there is a way to detect the file is done being written to)
 	// Poll that log file, retaining the marker
@@ -162,6 +173,42 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 				}
 			}
 
+			lines, marker, err = tailLogFile(r, db, *logFile.LogFileName, 0, marker)
+			if err != nil {
+				return err
+			}
+
+			if lines == "" {
+				empty++
+			} else {
+				empty = 0
+				if err := callback(lines); err != nil {
+					return err
+				}
+			}
+		case <-stop:
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func WatchFile(r *rds.RDS, db string, rate time.Duration, file string, callback func(string) error, stop <-chan struct{}) error {
+	logFile := &rds.DescribeDBLogFilesDetails{LogFileName: aws.String(file)}
+
+	// Get a marker for the end of the log file by requesting the most recent line
+	lines, marker, err := tailLogFile(r, db, *logFile.LogFileName, 1, "")
+	if err != nil {
+		return err
+	}
+
+	t := time.NewTicker(rate)
+	empty := 0
+	const checkLogfileRate = 4
+	for {
+		select {
+		case <-t.C:
 			lines, marker, err = tailLogFile(r, db, *logFile.LogFileName, 0, marker)
 			if err != nil {
 				return err
