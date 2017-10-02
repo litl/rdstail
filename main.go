@@ -54,11 +54,16 @@ func parseDB(c *cli.Context) string {
 	return db
 }
 
+func parseFile(c *cli.Context) string {
+	file := c.String("file")
+	return file
+}
+
 func watch(c *cli.Context) {
 	r := setupRDS(c)
 	db := parseDB(c)
 	rate := parseRate(c)
-	file := string(c.String("file"))
+	file := parseFile(c)
 	stop := make(chan struct{})
 	go signalListen(stop)
 
@@ -106,7 +111,7 @@ func papertrail(c *cli.Context) {
 func tail(c *cli.Context) {
 	r := setupRDS(c)
 	db := parseDB(c)
-	file := string(c.String("file"))
+	file := parseFile(c)
 	numLines := int64(c.Int("lines"))
 	if file != "" {
 		err := rdstail.TailFile(r, db, file, numLines)
