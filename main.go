@@ -12,8 +12,8 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
-	"github.com/urfave/cli"
 	"github.com/mgar/rdstail/src"
+	"github.com/urfave/cli"
 )
 
 func fie(e error) {
@@ -187,7 +187,7 @@ func main() {
 					Usage: "rds log polling rate",
 				},
 				cli.StringFlag{
-					Name: "file, f",
+					Name:  "file, f",
 					Usage: "name of the logfile to watch",
 				},
 			},
@@ -204,7 +204,7 @@ func main() {
 					Usage: "output the last n lines. use 0 for a full dump of the most recent file",
 				},
 				cli.StringFlag{
-					Name: "file, f",
+					Name:  "file, f",
 					Usage: "name of the logfile to watch",
 				},
 			},
