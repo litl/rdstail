@@ -26,7 +26,7 @@ USAGE:
    ./rdstail [global options] command [command options] [arguments...]
    
 VERSION:
-   0.1.0
+   2017.04
    
 COMMANDS:
    papertrail   stream logs into papertrail
@@ -37,7 +37,7 @@ COMMANDS:
 GLOBAL OPTIONS:
    --instance, -i   name of the db instance in rds [required]
    --region "us-east-1" AWS region [$AWS_REGION]
-   --max-retries "10"   maximium number of retries for rds requests
+   --max-retries "10"   maximum number of retries for rds requests
    --help, -h       show help
    --version, -v    print the version
    

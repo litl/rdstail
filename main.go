@@ -124,7 +124,7 @@ func main() {
 		cli.IntFlag{
 			Name:  "max-retries",
 			Value: 10,
-			Usage: "maximium number of retries for rds requests",
+			Usage: "maximum number of retries for rds requests",
 		},
 	}
 
