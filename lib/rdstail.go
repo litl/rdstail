@@ -1,13 +1,13 @@
-package rdstail
+package lib
 
 import (
 	"bytes"
 	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/chrismrivera/backoff"
@@ -44,6 +44,7 @@ func getMostRecentLogFile(r *rds.RDS, db string) (file *rds.DescribeDBLogFilesDe
 	return
 }
 
+// getMostRecentLogFileSince returns the most recent log file whose lastWritten >= since.
 func getMostRecentLogFileSince(r *rds.RDS, db string, since int64) (file *rds.DescribeDBLogFilesDetails, err error) {
 	resp, err := describeLogFiles(r, db, since)
 	if err != nil {
@@ -134,7 +135,7 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 		return err
 	}
 	if logFile == nil {
-		return errors.New("no log files")
+		return errors.New("No log files found for this RDS instance.")
 	}
 
 	// Get a marker for the end of the log file by requesting the most recent line
@@ -142,6 +143,8 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 	if err != nil {
 		return err
 	}
+
+	log.Infof("Starting with most recent log file: %s", *logFile.LogFileName)
 
 	t := time.NewTicker(rate)
 	empty := 0
@@ -151,12 +154,18 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 		case <-t.C:
 			// If the logfile tail was empty n times, check for a newer log file
 			if empty >= checkLogfileRate {
+				log.Debugf("Checking for a new log file since no new logs are found in last %v",
+					checkLogfileRate*rate)
 				empty = 0
 				newLogFile, err := getMostRecentLogFileSince(r, db, *logFile.LastWritten)
 				if err != nil {
 					return err
 				}
-				if newLogFile != nil {
+
+				// Ensure if we got a real new log file, and not the same file we are
+				// already tailing. Reset the marker if its a real new log file only.
+				if newLogFile != nil && *newLogFile.LogFileName != *logFile.LogFileName {
+					log.Infof("Found a new log file: %s", *newLogFile.LogFileName)
 					logFile = newLogFile
 					marker = ""
 				}
@@ -179,38 +188,31 @@ func Watch(r *rds.RDS, db string, rate time.Duration, callback func(string) erro
 			return nil
 		}
 	}
-
-	return nil
 }
 
 func FeedPapertrail(r *rds.RDS, db string, rate time.Duration, papertrailHost, app, hostname string, stop <-chan struct{}) error {
 	nameSegment := fmt.Sprintf(" %s %s: ", hostname, app)
 
 	// Establish TLS connection with papertrail
-	roots := x509.NewCertPool()
-	ok := roots.AppendCertsFromPEM([]byte(papertrailPEM))
-	if !ok {
-		return errors.New("failed to parse papertrail root certificate")
-	}
-
-	conn, err := tls.Dial("tcp", papertrailHost, &tls.Config{
-		RootCAs: roots,
-	})
+	conn, err := tls.Dial("tcp", papertrailHost, &tls.Config{})
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
 
 	// watch with callback writing to the connection
-	buf := bytes.Buffer{}
 	return Watch(r, db, rate, func(lines string) error {
 		timestamp := time.Now().UTC().Format("2006-01-02T15:04:05")
-		buf.Reset()
+		buf := bytes.Buffer{}
 		buf.WriteString(timestamp)
 		buf.WriteString(nameSegment)
 		buf.WriteString(lines)
 		return backoff.Try(papertrailBackoffMaxWait, papertrailBackoffDeadline, func() error {
 			_, err := conn.Write(buf.Bytes())
+			if err != nil {
+				log.Warnf("Writing to Papertrail failed. Error: %v. This will be retried.",
+					err, papertrailBackoffMaxWait)
+			}
 			return err
 		})
 	}, stop)

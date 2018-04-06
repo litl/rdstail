@@ -3,23 +3,23 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/rds"
 	"github.com/urfave/cli"
-	"github.com/litl/rdstail/src"
+
+	"github.com/Instamojo/rdstail/lib"
 )
 
 func fie(e error) {
 	if e != nil {
-		fmt.Println(e)
-		os.Exit(1)
+		log.Fatal(e)
 	}
 }
 
@@ -62,7 +62,7 @@ func watch(c *cli.Context) {
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.Watch(r, db, rate, func(lines string) error {
+	err := lib.Watch(r, db, rate, func(lines string) error {
 		fmt.Print(lines)
 		return nil
 	}, stop)
@@ -89,7 +89,7 @@ func papertrail(c *cli.Context) {
 	stop := make(chan struct{})
 	go signalListen(stop)
 
-	err := rdstail.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
+	err := lib.FeedPapertrail(r, db, rate, papertrailHost, appName, hostname, stop)
 
 	fie(err)
 }
@@ -98,7 +98,7 @@ func tail(c *cli.Context) {
 	r := setupRDS(c)
 	db := parseDB(c)
 	numLines := int64(c.Int("lines"))
-	err := rdstail.Tail(r, db, numLines)
+	err := lib.Tail(r, db, numLines)
 	fie(err)
 }
 
@@ -109,7 +109,7 @@ func main() {
 	app.Usage = `Reads AWS RDS logs
 
     AWS credentials are taken from an ~/.aws/credentials file or the env vars AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.`
-	app.Version = "0.1.0"
+	app.Version = "2017.04"
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "instance, i",
@@ -124,7 +124,7 @@ func main() {
 		cli.IntFlag{
 			Name:  "max-retries",
 			Value: 10,
-			Usage: "maximium number of retries for rds requests",
+			Usage: "maximum number of retries for rds requests",
 		},
 	}
 

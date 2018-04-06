@@ -1,0 +1,19 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:latest
+    working_directory: /go/src/github.com/Instamojo/rdstail
+    steps:
+      - checkout
+      - run:
+          name: Install Packages
+          command: go get -v -d
+      - run:
+          name: vet
+          command: go vet ./...
+      - setup_remote_docker:
+          reusable: true
+      - run:
+          name: Build Docker image
+          command: docker build --pull -t instamojo/rdstail:latest .
