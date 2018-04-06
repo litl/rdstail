@@ -12,6 +12,8 @@ jobs:
       - run:
           name: vet
           command: go vet ./...
+      - setup_remote_docker:
+          reusable: true
       - run:
           name: Build Docker image
           command: docker build --pull --rm=false -t instamojo/rdstail:latest .
