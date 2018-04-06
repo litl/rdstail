@@ -12,4 +12,5 @@ dependencies:
 
 test:
   override:
+      - docker --version
       - docker build --rm=false -t $CIRCLE_PROJECT_REPONAME:latest .
