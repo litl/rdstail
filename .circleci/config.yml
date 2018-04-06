@@ -3,15 +3,15 @@ jobs:
   build:
     docker:
       - image: circleci/golang:latest
-      - working_directory: /go/src/github.com/Instamojo/rdstail
+    working_directory: /go/src/github.com/Instamojo/rdstail
     steps:
       - checkout
       - run:
-        name: Install Packages
-        command: go get -v -d
+          name: Install Packages
+          command: go get -v -d
       - run:
-        name: vet
-        command: go vet ./...
+          name: vet
+          command: go vet ./...
       - run:
-        name: Build Docker image
-        command: docker build --pull --rm=false -t instamojo/rdstail:latest .
+          name: Build Docker image
+          command: docker build --pull --rm=false -t instamojo/rdstail:latest .
