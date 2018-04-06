@@ -16,4 +16,4 @@ jobs:
           reusable: true
       - run:
           name: Build Docker image
-          command: docker build --pull --rm=false -t instamojo/rdstail:latest .
+          command: docker build --pull -t instamojo/rdstail:latest .
