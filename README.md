@@ -1,33 +1,48 @@
-RDSTail
-=======
+# RDSTail
 
-RDSTail is a tool for tailing or streaming RDS log files.  Supports piping to papertrail.
+RDSTail is a tool for tailing or streaming RDS log files. Supports piping to papertrail. Forked from [litl/rdstail](https://github.com/litl/rdstail).
 
-Installation
-============
+[![Build Status](https://travis-ci.org/pperzyna/rdstail.svg?branch=master)](https://travis-ci.org/pperzyna/rdstail)
+[![Docker Pulls](https://img.shields.io/docker/pulls/pperzyna/rdstail.svg)](https://hub.docker.com/r/pperzyna/rdstail/tags)
 
-For now, you must compile from source.  Install [Go](https://golang.org).
+## Installation
 
-    » go get github.com/litl/rdstail
+For now, you must compile from source. Install [Go](https://golang.org).
 
+``` bash
+go get github.com/pperzyna/rdstail
+cd ${GOPATH}/src/github.com/pperzyna/rdstail/
+go build -o rdstail
 
-Usage
-=====
+export AWS_ACCESS_KEY_ID=""
+export AWS_SECRET_ACCESS_KEY=""
 
+./rdstail <flags>
 ```
-» ./rdstail -h
+
+## Quick Start
+
+This package is available with Docker:
+
+1. Run RDSTail
+
+```bash
+docker run -e AWS_ACCESS_KEY_ID="" -e AWS_SECRET_ACCESS_KEY="" pperzyna/rdstail
+```
+
+## Usage
+
+``` bash
+./rdstail -h
 
 NAME:
-   rdstail - Reads AWS RDS logs
+    rdstail - Reads AWS RDS logs
 
     AWS credentials are taken from an ~/.aws/credentials file or the env vars AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY.
 
 USAGE:
    ./rdstail [global options] command [command options] [arguments...]
-   
-VERSION:
-   0.1.0
-   
+      
 COMMANDS:
    papertrail   stream logs into papertrail
    watch    stream logs to stdout
@@ -41,8 +56,9 @@ GLOBAL OPTIONS:
    --help, -h       show help
    --version, -v    print the version
    
-------------------------------------------------------------
-» ./rdstail papertrail -h
+```
+``` bash
+./rdstail papertrail -h
 
 NAME:
    ./rdstail papertrail - stream logs into papertrail
@@ -55,9 +71,9 @@ OPTIONS:
    --app, -a "rdstail"      app name to send to papertrail
    --hostname "os.Hostname()"   hostname of the client, sent to papertrail
    --rate, -r "3s"      rds log polling rate
-   
-------------------------------------------------------------
-» ./rdstail watch -h
+```
+``` bash
+./rdstail watch -h
 
 NAME:
    ./rdstail watch - stream logs to stdout
@@ -69,8 +85,9 @@ OPTIONS:
    --rate, -r "3s"  rds log polling rate
    --file, -f "trace/alert_DATABASE.log.2017-09-27" name of the logfile
    
-------------------------------------------------------------
-» ./rdstail tail -h
+```
+``` bash
+./rdstail tail -h
 
 NAME:
    ./rdstail tail - tail the last N lines
@@ -81,5 +98,4 @@ USAGE:
 OPTIONS:
    --lines, -n "20" output the last n lines. use 0 for a full dump of the most recent file
    --file, -f "trace/alert_DATABASE.log.2017-09-27" name of the logfile
-
 ```

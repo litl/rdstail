@@ -1,0 +1,11 @@
+github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
+github.com/aws/aws-sdk-go v1.21.9 h1:+HXP97l4IbJvccwwNoweEknroEcX8QLwExcnc+Kxobg=
+github.com/aws/aws-sdk-go v1.21.9/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/chrismrivera/backoff v0.0.0-20150604152735-0d906324f9aa h1:S4pwlpAB6tXoeOQ586Byt/7CHDO0IMx6hDH9dkYMqU0=
+github.com/chrismrivera/backoff v0.0.0-20150604152735-0d906324f9aa/go.mod h1:49IcZfaAmaqge7XUyKvfheqAlY4w1A5PTWG7zrQCeyU=
+github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
+github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
+github.com/urfave/cli v1.21.0 h1:wYSSj06510qPIzGSua9ZqsncMmWE3Zr55KBERygyrxE=
+github.com/urfave/cli v1.21.0/go.mod h1:lxDj6qX9Q6lWQxIrbrT0nwecwUtRnhVZAJjJZrVUZZQ=
+gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
+gopkg.in/yaml.v2 v2.2.2/go.mod h1:hI93XBmqTisBFMUTm0b8Fm+jr3Dg1NNxqwp+5A1VGuI=
