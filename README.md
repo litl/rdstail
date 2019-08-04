@@ -67,6 +67,7 @@ USAGE:
 
 OPTIONS:
    --rate, -r "3s"  rds log polling rate
+   --file, -f "trace/alert_DATABASE.log.2017-09-27" name of the logfile
    
 ------------------------------------------------------------
 » ./rdstail tail -h
@@ -79,5 +80,6 @@ USAGE:
 
 OPTIONS:
    --lines, -n "20" output the last n lines. use 0 for a full dump of the most recent file
+   --file, -f "trace/alert_DATABASE.log.2017-09-27" name of the logfile
 
 ```
